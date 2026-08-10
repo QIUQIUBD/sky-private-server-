@@ -30,12 +30,29 @@
 ## 📁 目录结构
 
 ```
-（代码随研究进度逐步整理开源）
+├── server/
+│   └── account_server_mock.py    # Sky 2018 AccountServer 模拟（覆盖 82 个 /account/* 端点）
+├── notes/
+│   ├── skynet_protocol.txt       # SkyNet 实时联机协议逆向笔记（WebSocket / protobuf-c）
+│   ├── account_api_endpoints.txt # /account API 端点清单
+│   └── netrpc_list.txt           # NetRPC 消息类型列表（OfferCandle / FriendSync / GateSync ...）
+└── README.md
 ```
 
 ## 🚀 快速开始
 
-（待补充 — 首个可运行版本发布后更新）
+```bash
+# 启动 AccountServer 模拟（客户端原指向 skygold.top:443）
+sudo python3 server/account_server_mock.py --port 443 --log
+
+# HTTP 模式（本地测试）
+python3 server/account_server_mock.py --port 8080 --http
+```
+
+连接方式（三选一）：
+1. 修改 `/etc/hosts`：`127.0.0.1 skygold.top`
+2. 修改包内 `Info.plist` 的 `SkyServerHostname`（需重新签名）
+3. 用 stunnel/nginx 做 TLS 终结转发至本服务
 
 ## 📚 相关项目
 
