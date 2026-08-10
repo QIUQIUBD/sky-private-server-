@@ -1,0 +1,37 @@
+SkyNet 实时联机协议 (逆向推断)
+================================
+连接流程:
+  1. 客户端向 AccountServer (skygold.top) 发起 /account/login 等请求
+  2. AccountServer 返回 GameServer 信息(hostIp 等)
+  3. SkyNetClient 按 IP 直连 GameServer: "Attempting to connect to SkyNet at <ip>"
+  4. 建立 WebSocket (SocketRocket/SRWebSocket) 长连接
+  5. 序列化: protobuf-c (protobuf 2.0.3)
+
+证据字符串:
+  - "Attempting to connect to SkyNet at "
+  - "Established connection to SkyNet at "
+  - "Closing old connection, incorrect IP"  (按IP重连)
+  - hostIp
+  - ". Disconnecting from SkyNet temporarily." (断线)
+  - SkyNetClient 方法签名:
+      void init(Game*, HttpClient*)            -- 初始+HTTP
+      void bindLua(lua_State*, NetModule*, NetReachability*)
+      void sendCommand(const char*)            -- 调试命令
+      void update()                            -- 每帧
+  - TLS: Apple Security框架(SSLHandshake/SSLCopyPeerTrust) + CC_SHA256
+  - SRWebSocket allowsUntrustedSSLCertificates = 允许非信任证书(测试服)
+  - Lua侧: game:skyNetClient():SendCommandResponse(msg) -- 命令响应
+
+已知RPC(NetRpc, protobuf消息):
+  OfferCandleRpc/FoundYouRpc/BondSyncRpc/FriendSyncRpc/GateSyncRpc/
+  OpenGateRpc/DepositRpc/UseItemRpc/WaxSyncRpc/KillPlayerRpc/
+  DeathMarchRpc/ReplaySaveRpc/ReplayStopRpc/LevelUpFxRpc/...
+
+protobuf消息类:
+  AccountAuthRequest/AccountServerRequest/FriendRequest/GiftMessage/
+  SendChatMessage/HandleGameMessage/CritterV2Message
+
+Mock建议:
+  - SkyNet WebSocket 端点未确认(可能 ws://host:port 或 wss)
+  - 若需模拟, 可先mock AccountServer的join_random_game/join_previous_game
+    返回 server=null 或本地WS地址, 观察客户端行为
